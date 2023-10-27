@@ -1,15 +1,18 @@
-const express = require("express");
-const path = require("path");
 require("dotenv").config();
-// import express from "express";
-console.log(">>check env:", process.env);
+const express = require("express");
+// const path = require("path");
 const app = express();
-const port = process.env.PORT || 8081;
+const port = process.env.PORT || 8082;
 const hostname = process.env.HOST_NAME;
-app.set("views", path.join(__dirname, "views"));
-app.set("view engine", "ejs");
-app.get("/", (req, res) => {
-  res.render("sample.ejs");
+const configViewEngine = require("./config/viewEngine");
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+configViewEngine(app);
+const webRouter = require("./routes/web");
+const connection = require("./config/database");
+app.use("/", webRouter);
+connection.query("select * from Users", function (err, results, fields) {
+  console.log(">>>check result:", results); // results contains rows returned by server
 });
 
 app.listen(port, hostname, () => {
